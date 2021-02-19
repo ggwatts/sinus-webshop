@@ -7,16 +7,19 @@
       <div class="menu">
         <ul>
         <a @click="goToProducts" >  <li class="nav-item">Products</li></a> 
-          <a @click="goToRegister" > <li class="nav-item">Register</li></a> 
+          <a @click="goToRegister" v-if="!$store.state.loggedIn" > <li class="nav-item">Register</li></a> 
           <!-- Register/MyAccount -->
           <li class="nav-item" >
-           <div @click="openLogin()">Login</div> 
+           <div class="login-nav-text" v-if="!$store.state.loggedIn" @click="openLogin()">Login</div> 
  
             <div>
               <transition name="fade" appear>
-                <Login class="login" v-if="showLogin" />
+                <Login class="login" v-if="$store.state.showLogin" />
               </transition>
             </div>
+            <a class="my-profile" v-if="$store.state.loggedIn" @click="goToMyProfile()">
+               <img class="profile-icon" src="@/assets/profile-image.png" />
+            </a>
           </li>
           <li class="nav-cart">
             <transition name="fade" appear>
@@ -28,7 +31,7 @@
               <img class="cart-icon" src="@/assets/cart-icon.png" />
             </a>
             <transition name="fade" appear>
-              <Cart class="cart" v-if="showModal" />
+              <Cart class="cart" v-if="$store.state.showCart" />
             </transition>
           </li>
         </ul>
@@ -44,28 +47,36 @@ export default {
   components: { Cart, Login },
   data() {
     return {
-      showModal: false,
-      showLogin: true,
+     
+      
 
       products: [],
       counter: 0,
     };
   },
   methods: {
-    
+
+    async goToMyProfile(){
+   this.$store.commit('CLOSEPOPUPS')
+   await this.$store.dispatch('fetchUserOrders')
+    this.$router.push('/myprofile')
+  },
 goToRegister(){
+   this.$store.commit('CLOSEPOPUPS')
     this.$router.push('/register')
   },
   goToProducts(){
+     this.$store.commit('CLOSEPOPUPS')
     this.$router.push('/products')
   },
     openCart() {
-      this.showModal = !this.showModal;
-       this.showLogin = false;
+       this.$store.commit('MANAGECARTPOPUP')
+      
+       
     },
      openLogin() {
-      this.showLogin = !this.showLogin;
-       this.showModal = false;
+      this.$store.commit('MANAGELOGINPOPUP')
+       
     },
     cartCounter() {},
   },
@@ -128,6 +139,11 @@ goToRegister(){
   width: 44px;
   margin-top: 7px;
 }
+.profile-icon {
+  width: 40px;
+  margin-top: 7px;
+  margin-right: -20px;
+}
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s;
@@ -150,5 +166,8 @@ goToRegister(){
   margin-top:13px ;
   margin-left: -130px;
    z-index: 3;
+}
+.login-nav-text{
+   font-family: Open sans;
 }
 </style>

@@ -8,7 +8,7 @@
         <div class="order-list">
           <ul
             class="cart-list"
-            v-for="product in products"
+            v-for="(product, index) in products"
             :key="product.title"
           >
             <li class="cart-item">
@@ -22,7 +22,7 @@
                 <li class="short">{{ product.shortDesc }}</li>
                 <li class="numb">{{ product.serial }}</li>
               </ul>
-
+              <a class="remove-cartitem-btn" @click="removeCartItem(index)">Remove Item</a>
               <h3 class="item-price">{{ product.price }}</h3>
             </li>
           </ul>
@@ -37,21 +37,41 @@
       </div>
       <div class="input-details">
         <div class="left-right-box">
-          <h2>Your details</h2>
-          <label>Name</label>
-          <input type="text" />
-          <label>Street</label>
-          <input type="text" />
-          <div class="two-input-box">
-            <div>
-              <label>Zip code</label>
-              <input type="text" />
-            </div>
-            <div>
-              <label>City</label>
-              <input type="text" />
+          <div class="left-right-box" v-if="$store.state.loggedIn">
+            <h2>Your details</h2>
+            <label>Name</label>
+            <input v-model="user.name" type="text" />
+            <label>Street</label>
+            <input v-model="user.street" type="text" />
+            <div class="two-input-box">
+              <div>
+                <label>Zip code</label>
+                <input v-model="user.zip" type="text" />
+              </div>
+              <div>
+                <label>City</label>
+                <input v-model="user.city" type="text" />
+              </div>
             </div>
           </div>
+          <div class="left-right-box" v-else>
+            <h2>Your details</h2>
+            <label>Name</label>
+            <input type="text" />
+            <label>Street</label>
+            <input type="text" />
+            <div class="two-input-box">
+              <div>
+                <label>Zip code</label>
+                <input type="text" />
+              </div>
+              <div>
+                <label>City</label>
+                <input type="text" />
+              </div>
+            </div>
+          </div>
+
           <h2>Payment</h2>
           <label>Card Owner</label>
           <input type="text" />
@@ -67,7 +87,7 @@
               <input type="text" />
             </div>
           </div>
-          <a class="reg-btn" @click="goToOrderDone">Submit Order</a>
+          <a class="reg-btn" @click="makeOrder()">Submit Order</a>
         </div>
       </div>
     </div>
@@ -75,39 +95,45 @@
 </template>
 
 <script>
-
 export default {
   data() {
     return {
-       numb: 0,
+      numb: 0,
     };
-    
   },
-  computed:{
-    products(){
-      return this.$store.state.cartProducts
+  computed: {
+    products() {
+      return this.$store.state.cartProducts;
     },
-    totalPrice(){
-     this.products.forEach(product => {
+    totalPrice() {
+     this.$store.commit('CALCULATETOTALCOST');
+      return this.$store.state.totalPriceCart;
+    },
 
-       this.numb += product.price
-     }
-     );
-      return this.numb;
-    }
+    user() {
+      return this.$store.state.loggedInUser.user;
+    },
   },
-   methods: {
-    
-goToOrderDone(){
-    this.$router.push('/orderdone')
+  methods: {
+    async makeOrder() {
+      this.$store.commit("SENDINORDER", this.$store.state.cartProducts);
+      await this.$store.dispatch("makeOrder", this.$store.state.cartProductsID);
+      this.$store.commit("EMPTYCART");
+
+      this.$router.push("/orderdone");
+    },
+     removeCartItem(index) {
+     this.$store.commit('REMOVEFROMCART', index)
+      this.$store.commit('CALCULATETOTALCOST')
+     
+    },
   },
-   }
 };
 </script>
 
-<style lang="scss" >
+<style lang="scss">
 @import "@/assets/styles/styles.scss";
-.cart-item{
+.cart-item {
   margin-top: 10px;
 }
 .make-order-box {
@@ -121,7 +147,6 @@ goToOrderDone(){
   background-color: white;
   min-width: 450px;
   height: 500px;
-  
 }
 .input-details {
   width: 600px;
@@ -151,7 +176,7 @@ input {
   border-radius: 2px;
   background-color: transparent;
   min-width: 190px;
-  
+
   margin-bottom: 15px;
 }
 h2 {
@@ -175,5 +200,18 @@ h2 {
 .two-input-box {
   display: flex;
   flex-direction: row;
+}
+.remove-cartitem-btn {
+  background-color: rgb(110, 38, 38);
+  color: #fff;
+  padding: 8px 8px;
+  border-radius: 2px;
+  font-family: Open Sans;
+  font-size: 10px;
+  font-weight: 400;
+  text-decoration: none;
+  text-align: center;
+  width: 90px;
+  cursor: pointer;
 }
 </style>
