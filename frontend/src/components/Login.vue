@@ -54,6 +54,7 @@ export default {
   font-size: 18px;
   line-height: 25px;
   padding-right: 20px;
+  cursor:pointer;
 }
 input {
   padding: 6px;

@@ -138,6 +138,7 @@ goToRegister(){
 .cart-icon {
   width: 44px;
   margin-top: 7px;
+  cursor:pointer;
 }
 .profile-icon {
   width: 40px;
